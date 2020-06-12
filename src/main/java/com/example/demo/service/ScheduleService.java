@@ -27,16 +27,20 @@ public class ScheduleService {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private String hangOutLink;
 
+    private String previous_event_id="";
+    final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
+    Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, GoogleSignInApplication.getCredentials(HTTP_TRANSPORT))
+            .setApplicationName(APPLICATION_NAME)
+            .build();
+
+    public ScheduleService() throws GeneralSecurityException, IOException {
+    }
 
 
     public String createScheduleService(Schedule schedule) throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
-        Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, GoogleSignInApplication.getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
 
         Event event = new Event()
                 .setSummary(schedule.getSummary())
@@ -58,7 +62,7 @@ public class ScheduleService {
         for (Attendee a : schedule.getAttendees()) {
             attendeeList.add(new EventAttendee().setEmail(a.getEmail()));
         }
-        
+
         event.setAttendees(attendeeList);
 
 
@@ -71,7 +75,17 @@ public class ScheduleService {
         event = service.events().insert(calendarId, event).execute();
 
         hangOutLink=event.getHangoutLink();
+        previous_event_id=event.getId();
 
         return hangOutLink;
     }
+
+    public String deleteEvent() throws IOException, GeneralSecurityException {
+
+
+        service.events().delete("primary", previous_event_id).execute();
+        return "Deleted";
+    }
+
+
 }

@@ -3,10 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.bean.Schedule;
 import com.example.demo.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -21,6 +18,11 @@ public class ScheduleController {
     @PostMapping("/schedule")
     public String createSchedule(@RequestBody Schedule schedule) throws IOException, GeneralSecurityException {
         return scheduleService.createScheduleService(schedule);
+    }
+
+    @DeleteMapping("/delete")
+    public String deleteSchedule() throws IOException, GeneralSecurityException {
+        return scheduleService.deleteEvent();
     }
 
     @GetMapping("/greet")
