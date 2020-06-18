@@ -12,11 +12,14 @@ import java.security.GeneralSecurityException;
 public class ScheduleController {
 
 
-    @Autowired
-    private ScheduleService scheduleService;
+    private final ScheduleService scheduleService;
+
+    public ScheduleController(ScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+    }
 
     @PostMapping("/schedule")
-    public String createSchedule(@RequestBody Schedule schedule) throws IOException, GeneralSecurityException {
+    public String createSchedule(@RequestBody Schedule schedule) {
         return scheduleService.createScheduleService(schedule);
     }
 
@@ -28,6 +31,11 @@ public class ScheduleController {
     @GetMapping("/greet")
     public String greet(){
         return "Hello";
+    }
+
+    @PutMapping("/update")
+    public String updateSchedule(@RequestBody Schedule schedule) throws  IOException, GeneralSecurityException{
+        return scheduleService.updateEvent(schedule);
     }
 
 }

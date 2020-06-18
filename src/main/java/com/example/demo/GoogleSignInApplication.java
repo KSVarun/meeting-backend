@@ -1,6 +1,6 @@
 package com.example.demo;
 
-import com.example.demo.service.ScheduleService;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -21,7 +21,6 @@ import java.util.List;
 @SpringBootApplication
 public class GoogleSignInApplication {
 
-	private static final String APPLICATION_NAME = "Calendar";
 	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 	private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
@@ -45,13 +44,15 @@ public class GoogleSignInApplication {
 		}
 		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-		// Build flow and trigger user authorization request.
-		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-				HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-				.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-				.setAccessType("offline")
-				.build();
-		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8088).build();
+
+			// Build flow and trigger user authorization request.
+			GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+					HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+					.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+					.setAccessType("offline")
+					.build();
+			LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8088).build();
+
 		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 	}
 

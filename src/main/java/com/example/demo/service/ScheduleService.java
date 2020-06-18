@@ -18,15 +18,14 @@ import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Repository
 public class ScheduleService {
     private static final String APPLICATION_NAME = "video-search";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private String hangOutLink;
 
+    private final String calendarId = "primary";
     private String previous_event_id="";
     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
@@ -38,7 +37,7 @@ public class ScheduleService {
     }
 
 
-    public String createScheduleService(Schedule schedule) throws IOException, GeneralSecurityException {
+    public String createScheduleService(Schedule schedule) {
         // Build a new authorized API client service.
 
 
@@ -70,21 +69,74 @@ public class ScheduleService {
                 .setUseDefault(false);
         event.setReminders(reminders);
 
+        try {
+            event = service.events().insert(calendarId, event).execute();
+        }catch (IOException e){
+            return "Unable to create an event. Please retry";
+        }
 
-        String calendarId = "primary";
-        event = service.events().insert(calendarId, event).execute();
-
-        hangOutLink=event.getHangoutLink();
         previous_event_id=event.getId();
 
-        return hangOutLink;
+        return event.getHangoutLink();
     }
 
-    public String deleteEvent() throws IOException, GeneralSecurityException {
+    public String deleteEvent() {
 
-
-        service.events().delete("primary", previous_event_id).execute();
+        try {
+            service.events().delete(calendarId, previous_event_id).execute();
+        }catch (IOException e){
+            return "Unable to delete. Please retry";
+        }
         return "Deleted";
+    }
+
+    public String updateEvent(Schedule schedule) {
+        Event event;
+        try {
+             event = service.events().get(calendarId, previous_event_id).execute();
+
+        }catch(IOException e){
+            return "Event does not exist";
+        }
+
+        event.setSummary(schedule.getSummary());
+        event.setDescription(schedule.getDescription());
+
+        DateTime startDateTime = new DateTime(schedule.getStartDateTime());
+        EventDateTime start = new EventDateTime()
+                .setDateTime(startDateTime)
+                .setTimeZone("Asia/Kolkata");
+        event.setStart(start);
+
+
+
+        DateTime endDateTime = new DateTime(schedule.getEndDateTime());
+        EventDateTime end = new EventDateTime()
+                .setDateTime(endDateTime)
+                .setTimeZone("Asia/Kolkata");
+        event.setEnd(end);
+
+        List<EventAttendee> attendeeList = new ArrayList<>();
+        for (Attendee a : schedule.getAttendees()) {
+            attendeeList.add(new EventAttendee().setEmail(a.getEmail()));
+        }
+
+        event.setAttendees(attendeeList);
+
+        Event.Reminders reminders = new Event.Reminders()
+                .setUseDefault(false);
+        event.setReminders(reminders);
+
+        Event updatedEvent;
+        try {
+            updatedEvent = service.events().update(calendarId, event.getId(), event).execute();
+        }catch (IOException e){
+            return "Unable able to update. Please retry";
+        }
+
+        return updatedEvent.getHangoutLink();
+
+
     }
 
 
