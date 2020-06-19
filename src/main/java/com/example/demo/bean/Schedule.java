@@ -11,9 +11,9 @@ public class Schedule {
     private String endDateTime;
     private String startDateTime;
     private String summary;
-    private List<Attendee> attendees;
+    private ArrayList<String> attendees;
 
-    public Schedule( String description, String endDateTime, String startDateTime, String summary, List<Attendee> attendees) {
+    public Schedule( String description, String endDateTime, String startDateTime, String summary, ArrayList<String> attendees) {
 
         this.description = description;
         this.endDateTime = endDateTime;
@@ -48,11 +48,11 @@ public class Schedule {
         this.summary = summary;
     }
 
-    public List<Attendee> getAttendees() {
+    public ArrayList<String> getAttendees() {
         return attendees;
     }
 
-    public void setAttendees(List<Attendee> attendees) {
+    public void setAttendees(ArrayList<String> attendees) {
         this.attendees = attendees;
     }
 

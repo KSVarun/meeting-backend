@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.GoogleSignInApplication;
 import com.example.demo.bean.Attendee;
+import com.example.demo.bean.ErrorResponse;
 import com.example.demo.bean.Schedule;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Repository
@@ -29,6 +31,8 @@ public class ScheduleService {
     private String previous_event_id="";
     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
+    ErrorResponse response = new ErrorResponse();
+
     Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, GoogleSignInApplication.getCredentials(HTTP_TRANSPORT))
             .setApplicationName(APPLICATION_NAME)
             .build();
@@ -37,7 +41,7 @@ public class ScheduleService {
     }
 
 
-    public String createScheduleService(Schedule schedule) {
+    public ErrorResponse createScheduleService(Schedule schedule) {
         // Build a new authorized API client service.
 
 
@@ -58,9 +62,14 @@ public class ScheduleService {
         event.setEnd(end);
 
         List<EventAttendee> attendeeList = new ArrayList<>();
-        for (Attendee a : schedule.getAttendees()) {
-            attendeeList.add(new EventAttendee().setEmail(a.getEmail()));
+//        for (Attendee a : schedule.getAttendees()) {
+//            attendeeList.add(new EventAttendee().setEmail(a.getEmail()));
+//        }
+        Iterator iterator = schedule.getAttendees().iterator();
+        while(iterator.hasNext()) {
+            attendeeList.add(new EventAttendee().setEmail(iterator.next().toString()));
         }
+
 
         event.setAttendees(attendeeList);
 
@@ -72,31 +81,38 @@ public class ScheduleService {
         try {
             event = service.events().insert(calendarId, event).execute();
         }catch (IOException e){
-            return "Unable to create an event. Please retry";
+            response.setErrMsg("Unable to create an event. Please retry");
+            return response;
+
         }
 
         previous_event_id=event.getId();
 
-        return event.getHangoutLink();
+
+        response.setEventId(event.getId());
+        response.setUrl(event.getHangoutLink());
+
+        return response;
     }
 
-    public String deleteEvent() {
+    public String deleteEvent(String id) {
 
         try {
-            service.events().delete(calendarId, previous_event_id).execute();
+            service.events().delete(calendarId, id).execute();
         }catch (IOException e){
             return "Unable to delete. Please retry";
         }
         return "Deleted";
     }
 
-    public String updateEvent(Schedule schedule) {
+    public ErrorResponse updateEvent(String id,Schedule schedule) {
         Event event;
         try {
-             event = service.events().get(calendarId, previous_event_id).execute();
+             event = service.events().get(calendarId, id).execute();
 
         }catch(IOException e){
-            return "Event does not exist";
+            response.setErrMsg("Event does not exist");
+            return response;
         }
 
         event.setSummary(schedule.getSummary());
@@ -117,8 +133,13 @@ public class ScheduleService {
         event.setEnd(end);
 
         List<EventAttendee> attendeeList = new ArrayList<>();
-        for (Attendee a : schedule.getAttendees()) {
-            attendeeList.add(new EventAttendee().setEmail(a.getEmail()));
+//        for (Attendee a : schedule.getAttendees()) {
+//            attendeeList.add(new EventAttendee().setEmail(a.getEmail()));
+//        }
+
+        Iterator iterator = schedule.getAttendees().iterator();
+        while(iterator.hasNext()) {
+            attendeeList.add(new EventAttendee().setEmail(iterator.next().toString()));
         }
 
         event.setAttendees(attendeeList);
@@ -131,10 +152,14 @@ public class ScheduleService {
         try {
             updatedEvent = service.events().update(calendarId, event.getId(), event).execute();
         }catch (IOException e){
-            return "Unable able to update. Please retry";
+            response.setErrMsg("Unable to update the event. Please retry");
+            return response;
         }
 
-        return updatedEvent.getHangoutLink();
+        response.setEventId(event.getId());
+        response.setUrl(event.getHangoutLink());
+
+        return response;
 
 
     }

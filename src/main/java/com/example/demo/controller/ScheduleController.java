@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.bean.ErrorResponse;
 import com.example.demo.bean.Schedule;
 import com.example.demo.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,13 @@ public class ScheduleController {
     }
 
     @PostMapping("/schedule")
-    public String createSchedule(@RequestBody Schedule schedule) {
+    public ErrorResponse createSchedule(@RequestBody Schedule schedule) {
         return scheduleService.createScheduleService(schedule);
     }
 
-    @DeleteMapping("/delete")
-    public String deleteSchedule() throws IOException, GeneralSecurityException {
-        return scheduleService.deleteEvent();
+    @DeleteMapping("/delete/{id}")
+    public String deleteSchedule(@PathVariable String id) throws IOException, GeneralSecurityException {
+        return scheduleService.deleteEvent(id);
     }
 
     @GetMapping("/greet")
@@ -33,9 +34,9 @@ public class ScheduleController {
         return "Hello";
     }
 
-    @PutMapping("/update")
-    public String updateSchedule(@RequestBody Schedule schedule) throws  IOException, GeneralSecurityException{
-        return scheduleService.updateEvent(schedule);
+    @PutMapping("/update/{id}")
+    public ErrorResponse updateSchedule(@PathVariable String id,@RequestBody Schedule schedule) throws  IOException, GeneralSecurityException{
+        return scheduleService.updateEvent(id, schedule);
     }
 
 }
